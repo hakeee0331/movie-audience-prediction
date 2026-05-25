@@ -8,25 +8,35 @@ KOBIS 기간별 박스오피스 파일을 읽어 영화별 관객 수 예측에 
 
 ```text
 kobis-audience-prediction/
+  AGENTS.md
   README.md
   .gitignore
   requirements.txt
   data/
     raw/
     processed/
+      movie_snapshot_selected.csv
+      movie_snapshot_selected_utf8_sig.csv
+      movie_snapshot_enriched.csv
+      movie_snapshot_enriched_utf8_sig.csv
     db/
+      kobis_movies.db
   src/
     scripts/
       build_kobis_sqlite.py
+      enrich_with_kobis_api.py
+      enrich_with_kmdb_api.py
       validate_db.py
     notebooks/
     utils/
-      kobis_reader.py
       cleaner.py
+      kobis_api.py
+      kobis_reader.py
+      kmdb_api.py
   docs/
-    merge_rules.md
-    enrichment_rules.md
     data_pipeline.md
+    enrichment_rules.md
+    merge_rules.md
 ```
 
 모델 학습/예측 코드를 실행하기 전에는 먼저 데이터 파이프라인을 실행해 `movie_snapshot_enriched` 테이블과 CSV를 생성해야 합니다.
