@@ -19,6 +19,7 @@ kobis-audience-prediction/
       movie_snapshot_selected_utf8_sig.csv
       movie_snapshot_enriched.csv
       movie_snapshot_enriched_utf8_sig.csv
+      poster_resnet50/
     db/
       kobis_movies.db
   src/
@@ -28,6 +29,7 @@ kobis-audience-prediction/
       enrich_with_kmdb_api.py
       validate_db.py
     notebooks/
+      Movie_Poster_ResNet50_Embedding.ipynb
     utils/
       cleaner.py
       kobis_api.py
@@ -37,6 +39,7 @@ kobis-audience-prediction/
     data_pipeline.md
     enrichment_rules.md
     merge_rules.md
+    poster_resnet50_pipeline.md
 ```
 
 모델 학습/예측 코드를 실행하기 전에는 먼저 데이터 파이프라인을 실행해 `movie_snapshot_enriched` 테이블과 CSV를 생성해야 합니다.
@@ -52,6 +55,7 @@ pip install -r requirements.txt
 
 현재 저장된 KOBIS `.xls` 파일처럼 HTML 테이블 형식인 파일은 표준 라이브러리만으로도 읽을 수 있습니다.
 실제 `.xlsx` 파일을 읽으려면 `requirements.txt`의 의존성이 필요합니다.
+포스터 embedding 실험 노트북을 실행하려면 `torch`, `torchvision`, `Pillow`, `tqdm`도 필요합니다.
 
 ## Build DB
 
@@ -178,5 +182,39 @@ python3 src/scripts/enrich_with_kmdb_api.py --limit 100 --export-csv
 - `data/processed/movie_snapshot_enriched_utf8_sig.csv`
 
 보강 규칙은 [docs/enrichment_rules.md](docs/enrichment_rules.md)를 참고하세요.
+
+## Poster ResNet50 Embedding 실험
+
+`movie_snapshot_enriched_utf8_sig.csv`의 `poster_url`을 이용해 포스터 이미지를 다운로드하고, 사전학습 ResNet50으로 2048차원 이미지 embedding을 만드는 실험 노트북입니다.
+
+```text
+src/notebooks/Movie_Poster_ResNet50_Embedding.ipynb
+```
+
+실행 전에는 `movie_snapshot_enriched_utf8_sig.csv`에 `poster_url` 컬럼이 준비되어 있어야 합니다. `poster_url`은 KMDb 보강 결과에서 생성됩니다.
+
+노트북은 기본적으로 2016년 이후 영화 중 `poster_url`이 있는 행만 사용합니다. 처음 테스트할 때는 노트북의 아래 설정을 유지합니다.
+
+```python
+MAX_IMAGES = 100
+```
+
+전체 포스터에 대해 실행하려면 다음처럼 변경합니다.
+
+```python
+MAX_IMAGES = None
+```
+
+실행 결과는 입력 CSV가 있는 폴더 아래 `poster_resnet50/`에 저장됩니다.
+
+```text
+data/processed/poster_resnet50/
+  posters/
+  poster_embeddings_resnet50.npy
+  poster_embeddings_resnet50_index.csv
+  poster_download_log.csv
+```
+
+포스터 이미지와 embedding 파일은 실험용 산출물이며 용량이 커질 수 있으므로 Git에 올리지 않습니다. 자세한 실행 절차와 산출물 설명은 [docs/poster_resnet50_pipeline.md](docs/poster_resnet50_pipeline.md)를 참고하세요.
 
 모델 실행 전 필요한 데이터 생성 과정은 [docs/data_pipeline.md](docs/data_pipeline.md)에 정리되어 있습니다.
