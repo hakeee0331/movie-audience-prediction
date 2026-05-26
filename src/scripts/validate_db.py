@@ -41,6 +41,7 @@ def main() -> None:
                     "release_date",
                     "cumulative_sales_amount",
                     "cumulative_audience",
+                    "show_count",
                     "country",
                     "production_company",
                     "distributor",
@@ -75,6 +76,19 @@ def main() -> None:
                     FROM movie_snapshot
                     WHERE target_final_audience IS NULL
                        OR target_final_audience < 0
+                    """,
+                )
+                == 0,
+            ),
+            (
+                "show_count is present and non-negative",
+                scalar(
+                    conn,
+                    """
+                    SELECT COUNT(*)
+                    FROM movie_snapshot
+                    WHERE show_count IS NULL
+                       OR show_count < 0
                     """,
                 )
                 == 0,

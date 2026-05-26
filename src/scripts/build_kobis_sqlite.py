@@ -130,18 +130,20 @@ def build_snapshot(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
         CREATE TABLE movie_snapshot AS
-        WITH final_audience AS (
+        WITH group_metrics AS (
             SELECT
                 movie_name_clean,
                 release_date,
-                MAX(cumulative_audience) AS target_final_audience
+                MAX(cumulative_audience) AS target_final_audience,
+                SUM(COALESCE(show_count, 0)) AS total_show_count
             FROM boxoffice_period_raw
             GROUP BY movie_name_clean, release_date
         ),
         ranked AS (
             SELECT
                 raw.*,
-                fa.target_final_audience,
+                gm.target_final_audience,
+                gm.total_show_count,
                 ROW_NUMBER() OVER (
                     PARTITION BY raw.movie_name_clean, raw.release_date
                     ORDER BY
@@ -151,9 +153,9 @@ def build_snapshot(conn: sqlite3.Connection) -> None:
                         raw.row_number_in_file ASC
                 ) AS snapshot_rank
             FROM boxoffice_period_raw raw
-            JOIN final_audience fa
-              ON raw.movie_name_clean = fa.movie_name_clean
-             AND raw.release_date = fa.release_date
+            JOIN group_metrics gm
+              ON raw.movie_name_clean = gm.movie_name_clean
+             AND raw.release_date = gm.release_date
         )
         SELECT
             id AS raw_id,
@@ -171,7 +173,7 @@ def build_snapshot(conn: sqlite3.Connection) -> None:
             cumulative_audience,
             target_final_audience,
             screen_count,
-            show_count,
+            total_show_count AS show_count,
             primary_country,
             country,
             production_company,
@@ -198,6 +200,7 @@ def build_snapshot_selected(conn: sqlite3.Connection) -> None:
             release_date,
             cumulative_sales_amount,
             cumulative_audience,
+            show_count,
             country,
             production_company,
             distributor,

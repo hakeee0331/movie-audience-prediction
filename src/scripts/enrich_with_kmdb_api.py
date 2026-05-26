@@ -312,6 +312,7 @@ def build_enriched_table(conn: sqlite3.Connection) -> None:
             s.release_date,
             s.cumulative_sales_amount,
             s.cumulative_audience,
+            s.show_count,
             COALESCE(NULLIF(TRIM(s.country), ''), kd.countries, md.countries) AS country,
             COALESCE(NULLIF(TRIM(s.production_company), ''), kd.production_companies, md.production_companies) AS production_company,
             COALESCE(NULLIF(TRIM(s.distributor), ''), kd.distributors, md.distributors) AS distributor,
