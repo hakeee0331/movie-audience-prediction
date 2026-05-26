@@ -63,6 +63,7 @@ movie_name_clean + release_date
 ### `movie_snapshot_selected`
 
 `movie_snapshot`에서 모델링/분석에 우선 필요한 컬럼만 남긴 테이블입니다.
+`show_count`는 KOBIS 원본의 `상영횟수` 값이며, 같은 영화 그룹 안의 값을 합산해 누적 상영횟수로 사용합니다.
 
 ### `movie_snapshot_enriched`
 
