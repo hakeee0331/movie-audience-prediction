@@ -150,6 +150,7 @@ python3 src/scripts/enrich_with_kmdb_api.py --rebuild-only --export-csv
 현재 `movie_snapshot_enriched`에는 다음 컬럼이 추가되어 있습니다.
 
 ```text
+show_count
 poster_url
 synopsis
 ```
@@ -157,6 +158,7 @@ synopsis
 현재 데이터 기준:
 
 ```text
+show_count 채워진 행    20,621
 poster_url 채워진 행   4,737
 synopsis 채워진 행     5,494
 ```
