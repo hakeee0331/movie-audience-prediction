@@ -5,6 +5,7 @@ __pycache__/
 .venv/
 venv/
 .env
+*tmp/
 
 data/db/*.db
 data/db/*.sqlite
@@ -16,3 +17,4 @@ data/processed/*
 *.xls
 *.xlsx
 *.csv
+!docs/company_alias_map_utf8_sig.csv
