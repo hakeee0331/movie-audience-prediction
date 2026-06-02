@@ -5,15 +5,21 @@ from __future__ import annotations
 
 import argparse
 import csv
-import re
 import sqlite3
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
 from typing import Optional
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.entity_pool import load_alias_rules
+from src.utils.entity_pool import resolve_entity_identity
+from src.utils.entity_pool import split_entities
+
+
 DEFAULT_DB_PATH = PROJECT_ROOT / "data/db/kobis_movies.db"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data/processed/entity_pools"
 DEFAULT_ALIAS_MAP_PATH = PROJECT_ROOT / "docs/company_alias_map_utf8_sig.csv"
@@ -33,17 +39,13 @@ ENTITY_CONFIGS = {
         "column": "production_company",
         "min_movie_count": 2,
         "top_n": 100,
-        "normalize_key": True,
     },
     "distributor": {
         "column": "distributor",
         "min_movie_count": 2,
         "top_n": 50,
-        "normalize_key": True,
     },
 }
-
-EMPTY_VALUES = {"", "-", "--", "nan", "none", "null", "정보없음", "N/A", "n/a"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -54,81 +56,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--alias-map-path", type=Path, default=DEFAULT_ALIAS_MAP_PATH)
     return parser.parse_args()
-
-
-def clean_entity_name(value: str) -> str:
-    return " ".join(value.strip().split())
-
-
-def normalize_entity_key(value: str) -> str:
-    text = value.lower().replace("㈜", "주")
-    return re.sub(r"[^0-9a-z가-힣]", "", text)
-
-
-def load_alias_rules(path: Path) -> dict[str, list[dict[str, object]]]:
-    if not path.exists():
-        return {}
-
-    rules: dict[str, list[dict[str, object]]] = defaultdict(list)
-    with path.open(encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            entity_type = clean_entity_name(row["entity_type"])
-            canonical_entity = clean_entity_name(row["canonical_entity"])
-            aliases = [
-                normalize_entity_key(alias)
-                for alias in row["aliases"].split("|")
-                if normalize_entity_key(alias)
-            ]
-            aliases = sorted(set(aliases), key=len, reverse=True)
-            rules[entity_type].append(
-                {
-                    "canonical_entity": canonical_entity,
-                    "entity_key": f"canonical:{normalize_entity_key(canonical_entity)}",
-                    "aliases": aliases,
-                }
-            )
-
-    for entity_type in rules:
-        rules[entity_type].sort(
-            key=lambda rule: max((len(alias) for alias in rule["aliases"]), default=0),
-            reverse=True,
-        )
-
-    return rules
-
-
-def resolve_entity_identity(
-    entity: str,
-    entity_type: str,
-    alias_rules: dict[str, list[dict[str, object]]],
-    normalize_key: bool,
-) -> tuple[str, str]:
-    normalized_entity = normalize_entity_key(entity)
-    if normalize_key:
-        for rule in alias_rules.get(entity_type, []):
-            if any(alias in normalized_entity for alias in rule["aliases"]):
-                return rule["entity_key"], rule["canonical_entity"]
-
-    entity_key = normalized_entity if normalize_key else entity
-    return entity_key, entity
-
-
-def split_entities(value: object) -> list[str]:
-    if value is None:
-        return []
-
-    text = str(value).strip()
-    if text in EMPTY_VALUES:
-        return []
-
-    entities = []
-    for part in text.replace("|", ",").replace(";", ",").split(","):
-        name = clean_entity_name(part)
-        if name and name not in EMPTY_VALUES:
-            entities.append(name)
-
-    return sorted(set(entities))
 
 
 def fetch_rows(db_path: Path) -> list[sqlite3.Row]:
@@ -167,7 +94,6 @@ def build_pool(
     column: str,
     min_movie_count: int,
     top_n: int,
-    normalize_key: bool = False,
     alias_rules: Optional[dict[str, list[dict[str, object]]]] = None,
 ) -> list[dict[str, object]]:
     alias_rules = alias_rules or {}
@@ -191,7 +117,6 @@ def build_pool(
                 entity=entity,
                 entity_type=entity_type,
                 alias_rules=alias_rules,
-                normalize_key=normalize_key,
             )
             if not entity_key:
                 continue
@@ -286,7 +211,6 @@ def main() -> None:
             column=config["column"],
             min_movie_count=config["min_movie_count"],
             top_n=config["top_n"],
-            normalize_key=config.get("normalize_key", False),
             alias_rules=alias_rules,
         )
         output_path = args.output_dir / f"popular_{entity_type}_pool_utf8_sig.csv"
