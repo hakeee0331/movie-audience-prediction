@@ -190,6 +190,22 @@ data/processed/movie_snapshot_enriched_utf8_sig.csv
 movie_snapshot_enriched   20,621
 ```
 
+## 8-1. 인기 엔티티 Pool 생성
+
+감독, 배우, 제작사, 배급사 기반 파생 feature를 만들 때는 전체 기간 기준 popular entity pool을 생성할 수 있습니다.
+
+```bash
+python3 src/scripts/build_popular_entity_pools.py
+```
+
+생성 위치:
+
+```text
+data/processed/entity_pools/
+```
+
+자세한 기준은 [docs/popular_entity_pools.md](popular_entity_pools.md)를 참고하세요.
+
 ## 9. 최종 결측치 현황
 
 현재 `movie_snapshot_selected` 대비 `movie_snapshot_enriched`의 결측치 변화는 다음과 같습니다.

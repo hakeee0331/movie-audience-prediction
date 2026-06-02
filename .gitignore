@@ -16,3 +16,4 @@ data/processed/*
 *.xls
 *.xlsx
 *.csv
+!docs/company_alias_map_utf8_sig.csv
