@@ -13,6 +13,7 @@ has_popular_director
 popular_director_count
 has_popular_actor
 popular_actor_count
+top_popular_actor_mean_audience
 has_popular_production_company
 popular_production_company_count
 has_popular_distributor
@@ -302,6 +303,68 @@ pool 비교:
 - 제작사/배급사는 `entity` 표시명이 아니라 `entity_key`로 비교합니다.
 - pool 생성 스크립트와 전처리 코드의 엔티티 분리 규칙이 같아야 합니다.
 - alias map을 수정하면 popular pool을 다시 생성한 뒤 feature도 다시 만들어야 합니다.
+
+## Feature CSV 생성 스크립트
+
+popular entity feature만 따로 생성할 때는 아래 스크립트를 사용합니다.
+
+```bash
+python3 src/scripts/add_popular_entity_features.py
+```
+
+기본 입력:
+
+```text
+data/processed/movie_snapshot_enriched_utf8_sig.csv
+docs/company_alias_map_utf8_sig.csv
+data/processed/entity_pools/popular_director_pool_utf8_sig.csv
+data/processed/entity_pools/popular_actor_pool_utf8_sig.csv
+data/processed/entity_pools/popular_production_company_pool_utf8_sig.csv
+data/processed/entity_pools/popular_distributor_pool_utf8_sig.csv
+```
+
+기본 출력:
+
+```text
+data/processed/popular_entity_features_utf8_sig.csv
+```
+
+출력 CSV는 영화 식별 컬럼과 popular entity 파생 feature만 포함합니다.
+
+```text
+movie_name_clean
+release_date
+has_popular_director
+popular_director_count
+has_popular_actor
+popular_actor_count
+top_popular_actor_mean_audience
+has_popular_production_company
+popular_production_company_count
+has_popular_distributor
+popular_distributor_count
+```
+
+출력 경로나 입력 경로를 바꾸고 싶으면 아래 옵션을 사용할 수 있습니다.
+
+```bash
+python3 src/scripts/add_popular_entity_features.py \
+  --input-csv data/processed/movie_snapshot_enriched_utf8_sig.csv \
+  --output-csv data/processed/popular_entity_features_utf8_sig.csv \
+  --pool-dir data/processed/entity_pools \
+  --alias-map-path docs/company_alias_map_utf8_sig.csv
+```
+
+`top_popular_actor_mean_audience`는 해당 영화의 배우 중 popular actor pool에 포함된 배우들의 `mean_audience` 최댓값입니다. popular actor가 없으면 `0`입니다.
+
+alias map이나 pool 생성 기준을 바꾼 경우에는 아래 순서로 다시 실행합니다.
+
+```bash
+python3 src/scripts/build_popular_entity_pools.py
+python3 src/scripts/add_popular_entity_features.py
+```
+
+두 스크립트는 공통 유틸인 `src/utils/entity_pool.py`의 엔티티 분리, 정규화, alias 매칭 규칙을 함께 사용합니다.
 
 ## 현재 생성 결과 예시
 

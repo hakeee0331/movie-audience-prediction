@@ -204,6 +204,18 @@ python3 src/scripts/build_popular_entity_pools.py
 data/processed/entity_pools/
 ```
 
+생성된 pool을 사용해 영화별 popular entity feature만 따로 만들 수 있습니다.
+
+```bash
+python3 src/scripts/add_popular_entity_features.py
+```
+
+생성 위치:
+
+```text
+data/processed/popular_entity_features_utf8_sig.csv
+```
+
 자세한 기준은 [docs/popular_entity_pools.md](popular_entity_pools.md)를 참고하세요.
 
 ## 9. 최종 결측치 현황
