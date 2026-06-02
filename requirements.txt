@@ -6,6 +6,7 @@ xlrd>=2.0
 requests>=2.31
 Pillow>=10.0
 tqdm>=4.66
+matplotlib>=3.8
 torch>=2.2
 torchvision>=0.17
 ipykernel>=6.29
