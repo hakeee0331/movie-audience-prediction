@@ -29,7 +29,14 @@ kobis-audience-prediction/
       enrich_with_kmdb_api.py
       validate_db.py
     notebooks/
-      Movie_Poster_ResNet50_Embedding.ipynb
+      embeddings/
+        Movie_Poster_ResNet50_Embedding.ipynb
+        Movie_Poster_ResNet50_PosterPadding_Embedding.ipynb
+        Movie_Synopsis_RoBERTa_Embedding.ipynb
+      mlps/
+        NEW_MLP_only_공통_데이터_전처리.ipynb
+      preprocessing/
+        Common_preprocessing.ipynb
     utils/
       cleaner.py
       kobis_api.py
@@ -188,7 +195,7 @@ python3 src/scripts/enrich_with_kmdb_api.py --limit 100 --export-csv
 `movie_snapshot_enriched_utf8_sig.csv`의 `poster_url`을 이용해 포스터 이미지를 다운로드하고, 사전학습 ResNet50으로 2048차원 이미지 embedding을 만드는 실험 노트북입니다.
 
 ```text
-src/notebooks/Movie_Poster_ResNet50_Embedding.ipynb
+src/notebooks/embeddings/Movie_Poster_ResNet50_Embedding.ipynb
 ```
 
 실행 전에는 `movie_snapshot_enriched_utf8_sig.csv`에 `poster_url` 컬럼이 준비되어 있어야 합니다. `poster_url`은 KMDb 보강 결과에서 생성됩니다.

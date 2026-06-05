@@ -5,7 +5,7 @@
 현재 구현은 다음 노트북에 있습니다.
 
 ```text
-src/notebooks/Movie_Poster_ResNet50_Embedding.ipynb
+src/notebooks/embeddings/Movie_Poster_ResNet50_Embedding.ipynb
 ```
 
 ## 목적
